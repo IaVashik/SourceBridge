@@ -2,7 +2,7 @@ import telnetlib
 import subprocess
 import psutil
 
-SOURCE_ENGINE_GAMES = ["hl2.exe", "csgo.exe", "portal2.exe", "portal2_linux"] # todo
+SOURCE_ENGINE_GAMES = ["hl2", "csgo", "portal2", "chaos", "left4dead2", "bms"] # todo
 
 class SourceBridge:
     def __init__(self):
@@ -41,7 +41,8 @@ class SourceBridge:
             return self.game_process
         
         for game_process in psutil.process_iter():
-            if game_process.name() in SOURCE_ENGINE_GAMES:
+            process_name = game_process.name().lower()
+            if any(game in process_name for game in SOURCE_ENGINE_GAMES):
                 self.game_process = game_process
                 return game_process
         return None
@@ -62,7 +63,7 @@ class SourceBridge:
                 params.append(f"+{cmd}")
         else:
             params.append(f"+{command}")
-        subprocess.Popen(params, creationflags=subprocess.DETACHED_PROCESS) 
+        subprocess.Popen(params, creationflags=subprocess.DETACHED_PROCESS)
 
 
     def run(self, command):
@@ -86,7 +87,7 @@ class SourceBridge:
             if self.tn:
                 self.tn.read_very_eager() # hack :<
                 return True
-        except:
+        except:  # noqa: E722
             return False
-        
+
         return False
