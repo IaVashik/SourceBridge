@@ -2,6 +2,7 @@ import telnetlib
 import subprocess
 import psutil
 
+SOURCE_ENGINE_GAMES = ["hl2.exe", "csgo.exe", "portal2.exe", "portal2_linux"] # todo
 
 class SourceBridge:
     def __init__(self):
@@ -35,11 +36,15 @@ class SourceBridge:
 
     
     def __find_game_process(self):
-        for process in psutil.process_iter():
-            if process.name() in ["hl2.exe", "csgo.exe", "portal2.exe"]:
-                return process
+        if self.game_process:
+            return self.game_process
+        
+        for game_process in psutil.process_iter():
+            if game_process.name() in SOURCE_ENGINE_GAMES:
+                self.game_process = game_process
+                return game_process
         return None
-
+    
 
     def send_netcon_command(self, command):
         if self.tn:
@@ -64,5 +69,18 @@ class SourceBridge:
             self.send_hijack_command(command)   # todo
        
             
-    def IsValid(self):
-        return self.is_connected # TODO
+    def is_valid(self):
+        if not self.is_connected:
+            return False
+        
+        if self.game_process and self.game_process.is_running():
+            return True
+        try:
+            if self.tn:
+                self.tn.read_very_eager() # hack :<
+                return True
+        except:
+            return False
+        
+        return False
+        
