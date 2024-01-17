@@ -2,7 +2,7 @@ import telnetlib
 import subprocess
 import psutil
 
-SOURCE_ENGINE_GAMES = ["hl2", "csgo", "portal2", "chaos", "left4dead2", "bms"] # todo
+SOURCE_ENGINE_GAMES = ["hl2", "csgo", "portal2", "chaos", "left4dead2", "bms"]
 
 class SourceBridge:
     def __init__(self):
@@ -69,12 +69,12 @@ class SourceBridge:
     def run(self, command):
         if not self.is_valid():
             print("Source game offline now, try reconnect...")
-            self.connect()
+            return self.connect()
             
         if self.tn:
             self.send_netcon_command(command)
         else:
-            self.send_hijack_command(command)   # todo
+            self.send_hijack_command(command)
        
             
     def is_valid(self):
