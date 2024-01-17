@@ -7,6 +7,7 @@ SOURCE_ENGINE_GAMES = ["hl2.exe", "csgo.exe", "portal2.exe", "portal2_linux"] # 
 class SourceBridge:
     def __init__(self):
         self.tn = None
+        self.game_process = None
         self.is_connected = False
         self.connect()
 
@@ -29,7 +30,7 @@ class SourceBridge:
     def connect_hijack(self) -> bool:
         game = self.__find_game_process()
         if game:
-            print(f"Connected to {game.name} via hijack")
+            print(f"Connected to {game.name()} via hijack")
             self.is_connected = True
             return True
         return False
@@ -44,22 +45,28 @@ class SourceBridge:
                 self.game_process = game_process
                 return game_process
         return None
-    
+
 
     def send_netcon_command(self, command):
-        if self.tn:
-            self.tn.write(f"{command}\n".encode("utf-8"))
+        if isinstance(command, list):
+            command = ";".join(command)
+        self.tn.write(f"{command}\n".encode("utf-8"))
 
 
     def send_hijack_command(self, command):
-        if self.IsValid():
-            game = self.__find_game_process()
-            params = [game.exe(), "-hijack", "+", command]
-            subprocess.Popen(params, creationflags=subprocess.DETACHED_PROCESS) 
+        game = self.game_process
+        params = [game.exe(), "-hijack"]
+
+        if isinstance(command, list):
+            for cmd in command:
+                params.append(f"+{cmd}")
+        else:
+            params.append(f"+{command}")
+        subprocess.Popen(params, creationflags=subprocess.DETACHED_PROCESS) 
 
 
     def run(self, command):
-        if self.IsValid() is False:
+        if not self.is_valid():
             print("Source game offline now, try reconnect...")
             self.connect()
             
@@ -83,4 +90,3 @@ class SourceBridge:
             return False
         
         return False
-        
